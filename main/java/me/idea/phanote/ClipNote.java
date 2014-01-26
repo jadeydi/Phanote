@@ -114,10 +114,6 @@ public class ClipNote extends Activity {
             startActivity(intent);
         }
 
-        if (position == SERVICE) {
-            startService(new Intent(this, ClipService.class));
-        }
-
         Fragment mFragment;
         switch (position) {
             case SNIPPETS:
@@ -125,6 +121,9 @@ public class ClipNote extends Activity {
                 break;
             case NOTES:
                 mFragment = new NoteListFragment();
+                break;
+            case SERVICE:
+                mFragment = new ServiceFragment();
                 break;
             default:
                 mFragment = new SnippetListFragment();
