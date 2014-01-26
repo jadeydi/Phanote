@@ -1,0 +1,75 @@
+<resources>
+
+    <string name="app_name">Phanote</string>
+    <string name="hello_world">你好 Phanote!</string>
+
+    <!--global usable message-->
+    <string name="fire">确定</string>
+    <string name="cancel">取消</string>
+
+    <!--page indicate title-->
+    <string name="page_title_snippet">片段</string>
+    <string name="page_title_note">笔记</string>
+
+    <!--clipnote main menu-->
+    <string name="menu_active">设为默认笔记</string>
+    <string name="menu_add">新建笔记</string>
+    <string name="menu_copy">复制到剪切板</string>
+    <string name="menu_delete">删除笔记</string>
+    <string name="menu_edit">编辑笔记</string>
+    <string name="menu_open">打开笔记</string>
+    <string name="menu_overflow">Overflow</string>
+    <string name="menu_quit">退出</string>
+    <string name="menu_save">保存笔记</string>
+    <string name="menu_search">搜索笔记</string>
+    <string name="menu_setting">设置</string>
+    <string name="menu_share">分享</string>
+    <string name="menu_title_edit">编辑标题</string>
+    <string name="menu_stop_copy_service">停止自动保存</string>
+    <string name="menu_start_copy_service">开启自动保存</string>
+    <string name="menu_clean_snippets">删除全部片段</string>
+
+    <string name="pref_service_type">添加到笔记</string>
+    <string name="pref_service_type_desc">复制内容添加到笔记（默认到作为片段）</string>
+    
+    <string name="note_create_title">新建笔记</string>
+    <string name="note_edit_title">编辑: %1$s</string>
+    <string name="title_ok">确定</string>
+    <string name="title_hint">请输入标题</string>
+    <string name="new_note_title">新笔记</string>
+    
+    <string name="error_title">错误标题</string>
+    <string name="error_message">出错了！</string>
+	
+    <string name="search_hint">输入笔记名称</string>
+    <string name="new_note">新笔记</string>
+    <string name="settings">设置</string>
+    
+    <string name="notes">笔记</string>
+    <string name="snippets">片段</string>
+    
+    <string name="untitled">未标题</string>
+    
+    <string name="delete_note">确定删除笔记？</string>
+    <string name="clean_snipptes_alert">确定删除所有的片段？</string>
+    
+    <string name="notify_title">Phanote</string>
+    <string name="notify_content">点击打开Phanote</string>
+
+    <!--snippet related string-->
+    <string name="snippet_item_remove">删除片段</string>
+    <string name="snippet_item_add_to_clipboard">添加到剪切板</string>
+    <string name="snippet_item_add_to_note">添加到笔记</string>
+
+    <!--snippet selector menu string-->
+    <string name="menu_delete_snippet">删除片段</string>
+    <string name="menu_append_to_note">添加到笔记</string>
+    <string name="menu_copy_snippet">添加到剪切板</string>
+
+    <!--snippet selector operate dialog string-->
+    <string name="dialog_snippet_selector_message">确定删除这些片段？</string>
+
+    <!--color for snippet selector-->
+    <color name="blue">#33B5E5</color>
+</resources>
+

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/snippet_item_remove"
+        android:icon="@drawable/ic_menu_remove"
+        android:showAsAction="ifRoom"
+        android:title="@string/snippet_item_remove"/>
+    <item
+        android:id="@+id/snippet_item_copy_to_clipboard"
+        android:icon="@drawable/ic_menu_copy"
+        android:showAsAction="ifRoom"
+        android:title="@string/snippet_item_add_to_clipboard"/>
+    <item
+        android:id="@+id/snippet_item_add_to_note"
+        android:icon="@drawable/ic_menu_add_to_queue"
+        android:showAsAction="ifRoom"
+        android:title="@string/snippet_item_add_to_note"/>
+</menu>

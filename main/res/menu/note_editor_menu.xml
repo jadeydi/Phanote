@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/menu_save"
+        android:icon="@drawable/ic_menu_save"
+        android:showAsAction="always"
+        android:title="@string/menu_save"/>
+    <item
+        android:id="@+id/menu_delete"
+        android:icon="@drawable/ic_menu_delete"
+        android:showAsAction="always"
+        android:title="@string/menu_delete"/>
+    <item
+        android:id="@+id/menu_share"
+        android:actionProviderClass="android.widget.ShareActionProvider"
+        android:showAsAction="ifRoom"
+        android:title="@string/menu_share"/>
+
+    <item
+        android:id="@+id/menu_active"
+        android:icon="@drawable/ic_menu_important"
+        android:showAsAction="ifRoom"
+        android:title="@string/menu_active"/>
+
+    <item
+        android:id="@+id/menu_disactive"
+        android:icon="@drawable/ic_menu_not_important"
+        android:showAsAction="ifRoom"
+        android:title="@string/menu_disactive"/>
+</menu>

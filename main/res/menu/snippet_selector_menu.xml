@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/snippet_selector_delete"
+        android:icon="@drawable/ic_menu_discard"
+        android:title="@string/menu_delete_snippet"/>
+
+    <item
+        android:id="@+id/snippet_selector_append_to_note"
+        android:icon="@drawable/ic_menu_apend_to_note"
+        android:title="@string/menu_append_to_note" />
+
+    <item
+        android:id="@+id/snippet_selector_copy"
+        android:icon="@drawable/ic_menu_copy"
+        android:title="@string/menu_copy_snippet" />
+
+</menu>

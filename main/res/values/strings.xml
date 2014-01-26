@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Phanote</string>
+    <string name="hello_world">Hello world!</string>
+
+    <!-- global usable message -->
+    <string name="fire">Fire</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- page indicate title -->
+    <string name="page_title_snippet">Snippets</string>
+    <string name="page_title_note">Notes</string>
+
+    <!-- clipnote main menu -->
+    <string name="menu_active">Active Note</string>
+    <string name="menu_disactive">Disctive Note</string>
+    <string name="menu_add">New Note</string>
+    <string name="menu_copy">Copy To Clipbroad</string>
+    <string name="menu_delete">Delete Note</string>
+    <string name="menu_edit">Edit Note</string>
+    <string name="menu_open">Open Note</string>
+    <string name="menu_overflow">Overflow</string>
+    <string name="menu_quit">Quit</string>
+    <string name="menu_save">Save Note</string>
+    <string name="menu_search">Search Note</string>
+    <string name="menu_setting">Setting</string>
+    <string name="menu_share">Share Note</string>
+    <string name="menu_title_edit">Edit Title</string>
+    <string name="menu_stop_copy_service">Stop Copy Service</string>
+    <string name="menu_start_copy_service">Start Copy Service</string>
+    <string name="menu_clean_snippets">Clean Snippets</string>
+    <string name="pref_service_type">Append to note</string>
+    <string name="pref_service_type_desc">Options of service (clip data append to note or as a snippet)</string>
+    <string name="note_create_title">New Note</string>
+    <string name="note_edit_title">Edit: %1$s</string>
+    <string name="title_ok">OK</string>
+    <string name="title_hint">Please input title</string>
+    <string name="new_note_title">New Note</string>
+    <string name="error_title">Note Error</string>
+    <string name="error_message">There is some about this note.</string>
+    <string name="search_hint">Search notes</string>
+    <string name="new_note">New Note</string>
+    <string name="settings">Settings</string>
+    <string name="notes">Notes</string>
+    <string name="snippets">Snippets</string>
+    <string name="untitled">Untitled</string>
+    <string name="delete_note">Are you sure delete it?</string>
+    <string name="clean_snipptes_alert">Are you sure cleanup snippets?</string>
+    <string name="notify_title">Phanote</string>
+    <string name="notify_content">open phanote</string>
+
+    <!-- snippet related string -->
+    <string name="snippet_item_remove">Delete the snippet</string>
+    <string name="snippet_item_add_to_clipboard">Add to clipboard</string>
+    <string name="snippet_item_add_to_note">Add to note</string>
+
+    <!-- snippet selector menu string -->
+    <string name="menu_delete_snippet">Delete Snippets</string>
+    <string name="menu_append_to_note">Append To Note</string>
+    <string name="menu_copy_snippet">Copy To clipbroad</string>
+
+    <!-- snippet selector operate dialog string -->
+    <string name="dialog_snippet_selector_message">Are you sure delete the snippet(s)?</string>
+
+    <string-array name="nav_array">
+        <item>Snippets</item>
+        <item>Notes</item>
+        <item>Start Service</item>
+        <item>Settings</item>
+    </string-array>
+
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+    <string name="action_websearch">Web search</string>
+    <string name="app_not_available">Sorry, there\'s no web browser available</string>
+    <string name="stop_clipbroad_listener">Stop clip monitor</string>
+    <string name="start_clipbroad_listener">Start clip monitor</string>
+
+    <!-- color for snippet selector -->
+    <color name="blue">#33B5E5</color>
+    <color name="black">#000000</color>
+    <color name="notification_bg">#222222</color>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+</resources>
