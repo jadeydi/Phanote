@@ -8,6 +8,7 @@ import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.ClipboardManager.OnPrimaryClipChangedListener;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -26,6 +27,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -251,14 +253,16 @@ public class ClipService extends Service {
     private void unregisterClipbroadListener() {
         mClipboard.removePrimaryClipChangedListener(clipListener);
     }
+
     public WindowManager mWindowManager;
     public LinearLayout mFloatView;
+    public String mClipData;
 
     private void showFloatWindow(String str) {
 
-
-            mWindowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
-            mFloatView = (LinearLayout) LayoutInflater.from(mContext).inflate(R.layout.float_panel, null);
+        mClipData = str;
+        mWindowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+        mFloatView = (LinearLayout) LayoutInflater.from(mContext).inflate(R.layout.float_panel, null);
 
         ImageView iv = (ImageView) mFloatView.findViewById(R.id.float_close);
         iv.setOnClickListener(new View.OnClickListener() {
@@ -270,21 +274,28 @@ public class ClipService extends Service {
 
         ListView lv = (ListView) mFloatView.findViewById(R.id.float_list);
         lv.setAdapter(visibleNotes());
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+	        public void onItemClick(AdapterView l, View v, int position, long id) {
+                mWindowManager.removeView(mFloatView);
+                updateNote(id, mClipData);
+	        }
+        });
+
         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
             , PixelFormat.TRANSPARENT);
         // layoutParams.gravity = Gravity.RIGHT|Gravity.BOTTOM; //悬浮窗开始在右下角显示
-        layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
+        layoutParams.gravity = Gravity.CENTER;
         mWindowManager.addView(mFloatView, layoutParams);
-
-        updateNote(str);
     }
 
-    private void updateNote(String str) {
+    private void updateNote(Long id, String str) {
         Uri uri;
 
-        Cursor suitable = lastActivityNoteCursor();
+        Cursor suitable = getNoteCursor(id);
 
         if (!suitable.moveToFirst()) {
             suitable = lastUpdatedNoteCursor();
@@ -309,9 +320,22 @@ public class ClipService extends Service {
 
         ContentValues values = new ContentValues();
         values.put(NoteBase.Note.COLUMN_NAME_BODY, text);
+        values.put(NoteBase.Note.COLUMN_NAME_MODIFICATION_DATE, System.currentTimeMillis());
 
         getContentResolver().update(uri, values, null, null);
         suitable.close();
+    }
+
+    private Cursor lastActivityNoteCursor() {
+        Cursor cursor = getContentResolver().query(NoteBase.Note.ACTIVITIED_URI, null, null, null, NoteBase.Note.DEFAULT_SORT_ORDER + " LIMIT 1");
+        return cursor;
+    };
+
+    private Cursor getNoteCursor(long id) {
+        Uri uri = ContentUris.withAppendedId(NoteBase.Note.CONTENT_URI, id);
+
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        return cursor;
     }
 
     private SimpleCursorAdapter visibleNotes() {
@@ -323,11 +347,6 @@ public class ClipService extends Service {
 
     private Cursor visibleActivityNoteCursor() {
         Cursor cursor = getContentResolver().query(NoteBase.Note.ACTIVITIED_URI, null, null, null, NoteBase.Note.DEFAULT_SORT_ORDER + " LIMIT 3");
-        return cursor;
-    };
-
-    private Cursor lastActivityNoteCursor() {
-        Cursor cursor = getContentResolver().query(NoteBase.Note.ACTIVITIED_URI, null, null, null, NoteBase.Note.DEFAULT_SORT_ORDER + " LIMIT 1");
         return cursor;
     };
 
