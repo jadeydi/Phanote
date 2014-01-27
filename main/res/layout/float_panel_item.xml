@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/float_panel_item"
+    style="@style/ContentItem"
+    android:gravity="center_vertical"
+    android:singleLine="true" />

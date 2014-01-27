@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
@@ -21,7 +22,16 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.CursorAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RemoteViews;
+import android.widget.SimpleCursorAdapter;
 
 import me.idea.phanote.ClipNote;
 import me.idea.phanote.R;
@@ -98,7 +108,7 @@ public class ClipService extends Service {
                     if (mType == SNIPPET) {
                         insertSnippet(pasteData);
                     } else {
-                        updateNote(pasteData);
+                        showFloatWindow(pasteData);
                     }
                 }
             }
@@ -134,6 +144,8 @@ public class ClipService extends Service {
         }
     }
 
+    private static Context mContext;
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -144,6 +156,7 @@ public class ClipService extends Service {
         super.onCreate();
 
         mClipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        mContext = this;
 
         mRemoteViews = new RemoteViews(getPackageName(), R.layout.notification_layout);
 
@@ -238,6 +251,35 @@ public class ClipService extends Service {
     private void unregisterClipbroadListener() {
         mClipboard.removePrimaryClipChangedListener(clipListener);
     }
+    public WindowManager mWindowManager;
+    public LinearLayout mFloatView;
+
+    private void showFloatWindow(String str) {
+
+
+            mWindowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+            mFloatView = (LinearLayout) LayoutInflater.from(mContext).inflate(R.layout.float_panel, null);
+
+        ImageView iv = (ImageView) mFloatView.findViewById(R.id.float_close);
+        iv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mWindowManager.removeView(mFloatView);
+            }
+        });
+
+        ListView lv = (ListView) mFloatView.findViewById(R.id.float_list);
+        lv.setAdapter(visibleNotes());
+        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+            , PixelFormat.TRANSPARENT);
+        // layoutParams.gravity = Gravity.RIGHT|Gravity.BOTTOM; //悬浮窗开始在右下角显示
+        layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
+        mWindowManager.addView(mFloatView, layoutParams);
+
+        updateNote(str);
+    }
 
     private void updateNote(String str) {
         Uri uri;
@@ -272,6 +314,18 @@ public class ClipService extends Service {
         suitable.close();
     }
 
+    private SimpleCursorAdapter visibleNotes() {
+        String[] fromColumns = {NoteBase.Note.COLUMN_NAME_TITLE};
+        int[] toViews = {R.id.float_panel_item};
+        return new SimpleCursorAdapter(mContext, R.layout.float_panel_item, visibleActivityNoteCursor(),
+            fromColumns, toViews, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
+    }
+
+    private Cursor visibleActivityNoteCursor() {
+        Cursor cursor = getContentResolver().query(NoteBase.Note.ACTIVITIED_URI, null, null, null, NoteBase.Note.DEFAULT_SORT_ORDER + " LIMIT 3");
+        return cursor;
+    };
+
     private Cursor lastActivityNoteCursor() {
         Cursor cursor = getContentResolver().query(NoteBase.Note.ACTIVITIED_URI, null, null, null, NoteBase.Note.DEFAULT_SORT_ORDER + " LIMIT 1");
         return cursor;
@@ -294,7 +348,6 @@ public class ClipService extends Service {
         return getContentResolver().query(uri, PROJECTION, null, null, null);
     }
 
-
     private void insertSnippet(String str) {
         ContentValues values = new ContentValues();
         values.put(NoteBase.Snippet.COLUMN_NAME_TITLE, str);
@@ -304,4 +357,12 @@ public class ClipService extends Service {
         mBuilder.setContentText(str);
         mNotificationManager.notify(NOTICE_ID, mBuilder.getNotification());
     }
+
+    public interface onWindowManagerChangedListener {
+
+        void openPanel();
+
+        void removePanel();
+    }
+
 }
