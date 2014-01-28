@@ -110,7 +110,20 @@ public class ClipService extends Service {
                     if (mType == SNIPPET) {
                         insertSnippet(pasteData);
                     } else {
-                        showFloatWindow(pasteData);
+                        Cursor cursor = visibleActivityNoteCursor();
+                        if (cursor.getCount() == 0) {
+                            cursor = lastUpdatedNoteCursor();
+                            if (!cursor.moveToFirst()) {
+                                cursor = newNoteCursor();
+                                cursor.moveToFirst();
+                            }
+                            updateNote(cursor.getLong(cursor.getColumnIndex(NoteBase.Note._ID)), pasteData);
+                        } else if (cursor.getCount() == 1) {
+                            cursor.moveToFirst();
+                            updateNote(cursor.getLong(cursor.getColumnIndex(NoteBase.Note._ID)), pasteData);
+                        } else {
+                            showFloatWindow(pasteData);
+                        }
                     }
                 }
             }
@@ -298,12 +311,8 @@ public class ClipService extends Service {
         Cursor suitable = getNoteCursor(id);
 
         if (!suitable.moveToFirst()) {
-            suitable = lastUpdatedNoteCursor();
-
-            if (!suitable.moveToFirst()) {
-                suitable = newNoteCursor();
-                suitable.moveToFirst();
-            }
+            suitable = newNoteCursor();
+            suitable.moveToFirst();
         }
 
         uri = Uri.withAppendedPath(mUri, Long.toString(suitable.getInt(suitable
@@ -375,13 +384,6 @@ public class ClipService extends Service {
 //		update notification
         mBuilder.setContentText(str);
         mNotificationManager.notify(NOTICE_ID, mBuilder.getNotification());
-    }
-
-    public interface onWindowManagerChangedListener {
-
-        void openPanel();
-
-        void removePanel();
     }
 
 }
