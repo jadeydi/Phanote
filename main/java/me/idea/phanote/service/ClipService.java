@@ -144,6 +144,85 @@ public class ClipService extends Service {
         }
     };
 
+    private static Context mContext;
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        mClipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        registerClipbroadListener();
+
+        mContext = this;
+        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        setNotificationBuilder();
+        setRegisterReceiver();
+        setAppendToType();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+
+        setCurrentStatus(STARTED);
+        mNotificationManager.notify(NOTICE_ID, mBuilder.build());
+
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
+    public void onDestroy() {
+        mClipboard.removePrimaryClipChangedListener(clipListener);
+        mNotificationManager.cancel(NOTICE_ID);
+        unregisterReceiver(mReceiver);
+        setCurrentStatus(STOPED);
+
+        super.onDestroy();
+    }
+
+    private void setNotificationBuilder() {
+        mRemoteViews = setRemoteViewLayout();
+
+        Intent resultIntent = new Intent(this, ClipNote.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        mBuilder = new NotificationCompat.Builder(this).setSmallIcon(R.drawable.ic_grey_launcher);
+        mBuilder.setContent(mRemoteViews);
+        mBuilder.setOngoing(true);
+        mBuilder.setContentIntent(resultPendingIntent);
+    }
+
+    private RemoteViews setRemoteViewLayout() {
+        RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.notification_layout);
+
+        remoteViews.setOnClickPendingIntent(R.id.notification_status_toggle,
+            PendingIntent.getBroadcast(this, 0, new Intent(STOP_CLIPBROAD_LISTENDER), PendingIntent.FLAG_UPDATE_CURRENT));
+        remoteViews.setOnClickPendingIntent(R.id.notification_cancel,
+                PendingIntent.getBroadcast(this, 0, new Intent(CANCEL_NOTIFICATION), PendingIntent.FLAG_UPDATE_CURRENT));
+        return remoteViews;
+    }
+
+    private void setRegisterReceiver() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(START_CLIPBROAD_LISTENER);
+        intentFilter.addAction(STOP_CLIPBROAD_LISTENDER);
+        intentFilter.addAction(CANCEL_NOTIFICATION);
+        registerReceiver(mReceiver, intentFilter);
+    }
+
+    private void setAppendToType() {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        int type = sharedPref.getBoolean(SettingsActivity.KEY_PREF_SERVICE_TYPE, false) ? NOTE : SNIPPET;
+        setType(type);
+    }
+
     public static void setType(int type) {
         mType = type;
         setContentUri(mType);
@@ -159,68 +238,12 @@ public class ClipService extends Service {
         }
     }
 
-    private static Context mContext;
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    private void setCurrentStatus(int status) {
+        STATUS = status;
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-
-        mClipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-        mContext = this;
-
-        mRemoteViews = new RemoteViews(getPackageName(), R.layout.notification_layout);
-
-        mRemoteViews.setOnClickPendingIntent(R.id.notification_status_toggle,
-            PendingIntent.getBroadcast(this, 0, new Intent(STOP_CLIPBROAD_LISTENDER), PendingIntent.FLAG_UPDATE_CURRENT));
-        mRemoteViews.setOnClickPendingIntent(R.id.notification_cancel,
-            PendingIntent.getBroadcast(this, 0, new Intent(CANCEL_NOTIFICATION), PendingIntent.FLAG_UPDATE_CURRENT));
-        registerClipbroadListener();
-
-        mBuilder = new NotificationCompat.Builder(this).setSmallIcon(R.drawable.ic_grey_launcher);
-        mBuilder.setContent(mRemoteViews);
-        mBuilder.setOngoing(true);
-
-        Intent resultIntent = new Intent(this, ClipNote.class);
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-        mBuilder.setContentIntent(resultPendingIntent);
-
-        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(START_CLIPBROAD_LISTENER);
-        intentFilter.addAction(STOP_CLIPBROAD_LISTENDER);
-        intentFilter.addAction(CANCEL_NOTIFICATION);
-        registerReceiver(mReceiver, intentFilter);
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-
-        mType = sharedPref.getBoolean(SettingsActivity.KEY_PREF_SERVICE_TYPE, false) ? NOTE : SNIPPET;
-
-        setContentUri(mType);
-        mNotificationManager.notify(NOTICE_ID, mBuilder.build());
-
-        STATUS = STARTED;
-
-        return super.onStartCommand(intent, flags, startId);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mClipboard.removePrimaryClipChangedListener(clipListener);
-        mNotificationManager.cancel(NOTICE_ID);
-        unregisterReceiver(mReceiver);
-        STATUS = STOPED;
+    private int getCurrentStatus() {
+        return STATUS;
     }
 
     public void stopClipbroadListener() {
@@ -383,7 +406,7 @@ public class ClipService extends Service {
 
 //		update notification
         mBuilder.setContentText(str);
-        mNotificationManager.notify(NOTICE_ID, mBuilder.getNotification());
+        mNotificationManager.notify(NOTICE_ID, mBuilder.build());
     }
 
 }
