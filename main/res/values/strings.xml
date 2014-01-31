@@ -32,6 +32,8 @@
     <string name="menu_clean_snippets">Clean Snippets</string>
     <string name="pref_service_type">Append to note</string>
     <string name="pref_service_type_desc">Options of service (clip data append to note or as a snippet)</string>
+    <string name="pref_homepage_start">HomePage Default</string>
+    <string name="pref_homepage_start_desc">Open with Snippets or Notes (Checked: Notes,  Unchecked: Snippets)</string>
     <string name="note_create_title">New Note</string>
     <string name="note_edit_title">Edit: %1$s</string>
     <string name="title_ok">OK</string>

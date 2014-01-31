@@ -16,6 +16,7 @@ import me.idea.phanote.service.ClipService;
 public class SettingsActivity extends Activity {
     //	public static final String TAG = "SettingsActivity";
     public static final String KEY_PREF_SERVICE_TYPE = "pref_service_type";
+    public static final String KEY_PREF_HOMEPAGE_START = "pref_homepage_start";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

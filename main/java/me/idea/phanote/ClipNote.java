@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -26,6 +28,7 @@ public class ClipNote extends Activity {
     private static final int NOTES = 1;
     private static final int SERVICE = 2;
     private static final int SETTINGS = 3;
+    private static int HOMEPAGE;
 
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
@@ -77,7 +80,9 @@ public class ClipNote extends Activity {
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
         if (savedInstanceState == null) {
-            selectItem(0);
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+            HOMEPAGE = sharedPref.getBoolean(SettingsActivity.KEY_PREF_HOMEPAGE_START, false) ? NOTES : SNIPPETS;
+            selectItem(HOMEPAGE);
         }
 
         if (ClipService.getCurrentStatus() == ClipService.STOPED)
@@ -126,8 +131,13 @@ public class ClipNote extends Activity {
                 mFragment = new ServiceFragment();
                 break;
             default:
-                mFragment = new SnippetListFragment();
-                break;
+                if (HOMEPAGE == SNIPPETS) {
+                    mFragment = new SnippetListFragment();
+                } else if (HOMEPAGE == NOTES) {
+                    mFragment = new NoteListFragment();
+                } else {
+                    mFragment = new SnippetListFragment();
+                }
         }
 
 
