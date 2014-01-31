@@ -62,83 +62,87 @@ public class ClipService extends Service {
     private static final int CANCEL = 2;
     public static int STATUS = STOPED; // Current service status.
 
-    private static int mType = 0;
+    private static int mAppendType = 0;
     private static Uri mUri;
     private static ClipboardManager mClipboard;
     private Handler mHandler = new Handler() {
 
         @Override
         public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case STOPED:
-                    stopClipbroadListener();
-                    break;
-                case STARTED:
-                    startClipbroadListener();
-                    break;
+        switch (msg.what) {
+            case STOPED:
+                stopClipbroadListener();
+                break;
+            case STARTED:
+                startClipbroadListener();
+                break;
 
-                case CANCEL:
-                    cancelNotification();
-                    break;
-                default:
-                    super.handleMessage(msg);
-            }
+            case CANCEL:
+                cancelNotification();
+                break;
+            default:
+                super.handleMessage(msg);
+        }
         }
     };
     private NotificationManager mNotificationManager;
     private NotificationCompat.Builder mBuilder;
     private RemoteViews mRemoteViews;
-    private String pasteData = "";
+    private static String pasteData = "";
     private OnPrimaryClipChangedListener clipListener = new OnPrimaryClipChangedListener() {
 
         @Override
         public void onPrimaryClipChanged() {
 
-            if (mClipboard.getPrimaryClipDescription().hasMimeType(
-                    ClipDescription.MIMETYPE_TEXT_PLAIN)) {
-                ClipData mClipData = mClipboard.getPrimaryClip();
+        if (mClipboard.getPrimaryClipDescription() == null)
+            return;
 
-                if (mClipData.getItemCount() <= 0)
-                    return;
+        if (mClipboard.getPrimaryClipDescription().hasMimeType(
+                ClipDescription.MIMETYPE_TEXT_PLAIN)) {
+            ClipData mClipData = mClipboard.getPrimaryClip();
 
-                ClipData.Item item = mClipboard.getPrimaryClip().getItemAt(0);
-                String str = item.getText().toString();
+            if (mClipData == null || mClipData.getItemCount() <= 0)
+                return;
 
-                if (!pasteData.equals(str)) {
-                    pasteData = str;
+            ClipData.Item item = mClipData.getItemAt(0);
+            String str = (String) item.getText();
 
-                    if (mType == SNIPPET) {
-                        insertSnippet(pasteData);
+            if (!pasteData.equals(str)) {
+                pasteData = str;
+
+                if (getAppendType() == SNIPPET) {
+                    insertSnippet(pasteData);
+                } else if (getAppendType() == NOTE) {
+                    Cursor cursor = visibleActivityNoteCursor();
+                    if (cursor.getCount() > 1) {
+                        showFloatWindow(pasteData);
+                    } else if (cursor.getCount() == 1) {
+                        updateNote(cursor, pasteData);
                     } else {
-                        Cursor cursor = visibleActivityNoteCursor();
-                        if (cursor.getCount() == 0) {
-                            cursor = lastUpdatedNoteCursor();
-                            if (!cursor.moveToFirst()) {
-                                cursor = newNoteCursor();
-                                cursor.moveToFirst();
-                            }
-                            updateNote(cursor.getLong(cursor.getColumnIndex(NoteBase.Note._ID)), pasteData);
-                        } else if (cursor.getCount() == 1) {
-                            cursor.moveToFirst();
-                            updateNote(cursor.getLong(cursor.getColumnIndex(NoteBase.Note._ID)), pasteData);
-                        } else {
-                            showFloatWindow(pasteData);
+                        cursor = lastUpdatedNoteCursor();
+                        if (!cursor.moveToFirst()) {
+                            cursor = newNoteCursor();
                         }
+                        updateNote(cursor, pasteData);
                     }
                 }
             }
+        }
         }
     };
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            String state = intent.getAction();
+            if (state == null)
+                return;
 
-            if (intent.getAction().equals(START_CLIPBROAD_LISTENER)) {
+            if (state.equals(START_CLIPBROAD_LISTENER)) {
                 mHandler.sendEmptyMessage(1);
-            } else if (intent.getAction().equals(STOP_CLIPBROAD_LISTENDER)) {
+            } else if (state.equals(STOP_CLIPBROAD_LISTENDER)) {
                 mHandler.sendEmptyMessage(0);
-            } else if (intent.getAction().equals(CANCEL_NOTIFICATION)) {
+            } else if (state.equals(CANCEL_NOTIFICATION)) {
                 mHandler.sendEmptyMessage(2);
             }
         }
@@ -177,9 +181,9 @@ public class ClipService extends Service {
 
     @Override
     public void onDestroy() {
-        mClipboard.removePrimaryClipChangedListener(clipListener);
-        mNotificationManager.cancel(NOTICE_ID);
+        unregisterClipbroadListener();
         unregisterReceiver(mReceiver);
+        mNotificationManager.cancel(NOTICE_ID);
         setCurrentStatus(STOPED);
 
         super.onDestroy();
@@ -203,7 +207,7 @@ public class ClipService extends Service {
         RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.notification_layout);
 
         remoteViews.setOnClickPendingIntent(R.id.notification_status_toggle,
-            PendingIntent.getBroadcast(this, 0, new Intent(STOP_CLIPBROAD_LISTENDER), PendingIntent.FLAG_UPDATE_CURRENT));
+                PendingIntent.getBroadcast(this, 0, new Intent(STOP_CLIPBROAD_LISTENDER), PendingIntent.FLAG_UPDATE_CURRENT));
         remoteViews.setOnClickPendingIntent(R.id.notification_cancel,
                 PendingIntent.getBroadcast(this, 0, new Intent(CANCEL_NOTIFICATION), PendingIntent.FLAG_UPDATE_CURRENT));
         return remoteViews;
@@ -220,30 +224,45 @@ public class ClipService extends Service {
     private void setAppendToType() {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         int type = sharedPref.getBoolean(SettingsActivity.KEY_PREF_SERVICE_TYPE, false) ? NOTE : SNIPPET;
-        setType(type);
-    }
-
-    public static void setType(int type) {
-        mType = type;
-        setContentUri(mType);
+        setAppendType(type);
     }
 
     private static void setContentUri(int type) {
         switch (type) {
             case SNIPPET:
-                mUri = NoteBase.Snippet.CONTENT_URI;
+                setCurrentUri(NoteBase.Snippet.CONTENT_URI);
+                break;
+            case NOTE:
+                setCurrentUri(NoteBase.Note.CONTENT_URI);
                 break;
             default:
-                mUri = NoteBase.Note.CONTENT_URI;
+                setCurrentUri(NoteBase.Snippet.CONTENT_URI);
         }
     }
 
-    private void setCurrentStatus(int status) {
+    public static void setCurrentStatus(int status) {
         STATUS = status;
     }
 
-    private int getCurrentStatus() {
+    public static int getCurrentStatus() {
         return STATUS;
+    }
+
+    public static void setAppendType(int type) {
+        mAppendType = type;
+        setContentUri(type);
+    }
+
+    private static int getAppendType() {
+        return mAppendType;
+    }
+
+    private static void setCurrentUri(Uri uri) {
+        mUri = uri;
+    }
+
+    private static Uri getCurrentUri() {
+        return mUri;
     }
 
     public void stopClipbroadListener() {
@@ -256,15 +275,20 @@ public class ClipService extends Service {
         notificationChangeToStopStatus();
     }
 
-    private void cancelNotification() {
-        mNotificationManager.cancel(NOTICE_ID);
+    private void registerClipbroadListener() {
+        mClipboard.addPrimaryClipChangedListener(clipListener);
+    }
+
+    private void unregisterClipbroadListener() {
+        mClipboard.removePrimaryClipChangedListener(clipListener);
     }
 
     private void notificationChangeToStopStatus() {
         Intent mIntent = new Intent(STOP_CLIPBROAD_LISTENDER);
         mRemoteViews.setImageViewResource(R.id.notification_status_toggle, R.drawable.ic_menu_stop);
         mRemoteViews.setTextViewText(R.id.notification_content, getString(R.string.stop_clipbroad_listener));
-        mRemoteViews.setOnClickPendingIntent(R.id.notification_status_toggle, PendingIntent.getBroadcast(this, 0, mIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+        mRemoteViews.setOnClickPendingIntent(R.id.notification_status_toggle,
+            PendingIntent.getBroadcast(this, 0, mIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 
         mBuilder.setContent(mRemoteViews);
         mNotificationManager.notify(NOTICE_ID, mBuilder.build());
@@ -276,32 +300,29 @@ public class ClipService extends Service {
         mRemoteViews.setImageViewResource(R.id.notification_status_toggle, R.drawable.ic_menu_play);
         mRemoteViews.setTextViewText(R.id.notification_content, getString(R.string.start_clipbroad_listener));
         mRemoteViews.setOnClickPendingIntent(R.id.notification_status_toggle,
-                PendingIntent.getBroadcast(this, 0, mIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+            PendingIntent.getBroadcast(this, 0, mIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 
         mBuilder.setContent(mRemoteViews);
         mNotificationManager.notify(NOTICE_ID, mBuilder.build());
     }
 
-    private void registerClipbroadListener() {
-        mClipboard.addPrimaryClipChangedListener(clipListener);
+    private void cancelNotification() {
+        mNotificationManager.cancel(NOTICE_ID);
     }
 
-    private void unregisterClipbroadListener() {
-        mClipboard.removePrimaryClipChangedListener(clipListener);
-    }
-
-    public WindowManager mWindowManager;
-    public LinearLayout mFloatView;
-    public String mClipData;
+    private static WindowManager mWindowManager;
+    private static LinearLayout mFloatView;
+    private static String mClipStr;
 
     private void showFloatWindow(String str) {
 
-        mClipData = str;
-        mWindowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+        mClipStr = str;
         mFloatView = (LinearLayout) LayoutInflater.from(mContext).inflate(R.layout.float_panel, null);
+        mWindowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
 
         ImageView iv = (ImageView) mFloatView.findViewById(R.id.float_close);
         iv.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
                 mWindowManager.removeView(mFloatView);
@@ -314,8 +335,9 @@ public class ClipService extends Service {
 
             @Override
 	        public void onItemClick(AdapterView l, View v, int position, long id) {
+
+	            updateNote(getNoteCursor(id), mClipStr);
                 mWindowManager.removeView(mFloatView);
-                updateNote(id, mClipData);
 	        }
         });
 
@@ -323,28 +345,20 @@ public class ClipService extends Service {
             WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
             , PixelFormat.TRANSPARENT);
-        // layoutParams.gravity = Gravity.RIGHT|Gravity.BOTTOM; //悬浮窗开始在右下角显示
         layoutParams.gravity = Gravity.CENTER;
         mWindowManager.addView(mFloatView, layoutParams);
     }
 
-    private void updateNote(Long id, String str) {
-        Uri uri;
+    private void updateNote(Cursor cursor, String str) {
+        cursor.moveToFirst();
 
-        Cursor suitable = getNoteCursor(id);
-
-        if (!suitable.moveToFirst()) {
-            suitable = newNoteCursor();
-            suitable.moveToFirst();
-        }
-
-        uri = Uri.withAppendedPath(mUri, Long.toString(suitable.getInt(suitable
+        Uri uri = Uri.withAppendedPath(getCurrentUri(), Long.toString(cursor.getLong(cursor
                 .getColumnIndex(NoteBase.Note._ID))));
 
-        int bodyIndex = suitable.getColumnIndex(NoteBase.Note.COLUMN_NAME_BODY);
-
         String text, oldText;
-        if ((oldText = suitable.getString(bodyIndex)).equals("")) {
+        oldText = cursor.getString(cursor.getColumnIndex(NoteBase.Note.COLUMN_NAME_BODY));
+
+        if (oldText == null || oldText.equals("")) {
             text = str;
         } else {
             text = oldText + "\n\n" + str;
@@ -355,19 +369,13 @@ public class ClipService extends Service {
         values.put(NoteBase.Note.COLUMN_NAME_MODIFICATION_DATE, System.currentTimeMillis());
 
         getContentResolver().update(uri, values, null, null);
-        suitable.close();
+        cursor.close();
     }
-
-    private Cursor lastActivityNoteCursor() {
-        Cursor cursor = getContentResolver().query(NoteBase.Note.ACTIVITIED_URI, null, null, null, NoteBase.Note.DEFAULT_SORT_ORDER + " LIMIT 1");
-        return cursor;
-    };
 
     private Cursor getNoteCursor(long id) {
         Uri uri = ContentUris.withAppendedId(NoteBase.Note.CONTENT_URI, id);
 
-        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-        return cursor;
+        return getContentResolver().query(uri, null, null, null, null);
     }
 
     private SimpleCursorAdapter visibleNotes() {
@@ -378,14 +386,11 @@ public class ClipService extends Service {
     }
 
     private Cursor visibleActivityNoteCursor() {
-        Cursor cursor = getContentResolver().query(NoteBase.Note.ACTIVITIED_URI, null, null, null, NoteBase.Note.DEFAULT_SORT_ORDER + " LIMIT 3");
-        return cursor;
+        return getContentResolver().query(NoteBase.Note.ACTIVITIED_URI, null, null, null, NoteBase.Note.DEFAULT_SORT_ORDER + " LIMIT 3");
     };
 
-
     private Cursor lastUpdatedNoteCursor() {
-        Cursor cursor = getContentResolver().query(NoteBase.Note.CONTENT_URI, null, null, null, NoteBase.Note.DEFAULT_SORT_ORDER + " LIMIT 1");
-        return cursor;
+        return getContentResolver().query(NoteBase.Note.CONTENT_URI, null, null, null, NoteBase.Note.DEFAULT_SORT_ORDER + " LIMIT 1");
     };
 
     private Cursor newNoteCursor() {
@@ -402,9 +407,8 @@ public class ClipService extends Service {
     private void insertSnippet(String str) {
         ContentValues values = new ContentValues();
         values.put(NoteBase.Snippet.COLUMN_NAME_TITLE, str);
-        getContentResolver().insert(mUri, values);
+        getContentResolver().insert(getCurrentUri(), values);
 
-//		update notification
         mBuilder.setContentText(str);
         mNotificationManager.notify(NOTICE_ID, mBuilder.build());
     }

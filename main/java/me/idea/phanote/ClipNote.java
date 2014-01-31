@@ -80,7 +80,7 @@ public class ClipNote extends Activity {
             selectItem(0);
         }
 
-        if (ClipService.STATUS == ClipService.STOPED)
+        if (ClipService.getCurrentStatus() == ClipService.STOPED)
             startService(new Intent(this, ClipService.class));
     }
 

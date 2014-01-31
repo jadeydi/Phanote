@@ -67,9 +67,9 @@ public class SettingsActivity extends Activity {
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             if (key.equals(KEY_PREF_SERVICE_TYPE)) {
                 if (sharedPreferences.getBoolean(key, false)) {
-                    ClipService.setType(ClipService.NOTE);
+                    ClipService.setAppendType(ClipService.NOTE);
                 } else {
-                    ClipService.setType(ClipService.SNIPPET);
+                    ClipService.setAppendType(ClipService.SNIPPET);
                 }
             }
         }
