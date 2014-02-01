@@ -256,7 +256,7 @@ public class SnippetListFragment extends ListFragment implements
     private void copyToClipboard(String text) {
         ClipboardManager clipboard = (ClipboardManager) mContext
                 .getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("Simple Text", text);
+        ClipData clip = ClipData.newPlainText("Copy text from phanote.", text);
         clipboard.setPrimaryClip(clip);
     }
 

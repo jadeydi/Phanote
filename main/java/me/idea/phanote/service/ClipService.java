@@ -105,7 +105,10 @@ public class ClipService extends Service {
                 return;
 
             ClipData.Item item = mClipData.getItemAt(0);
-            String str = (String) item.getText();
+
+            if (item.getText() == null)
+                return;
+            String str = item.getText().toString();
 
             if (!pasteData.equals(str)) {
                 pasteData = str;
@@ -121,7 +124,8 @@ public class ClipService extends Service {
                     } else {
                         cursor = lastUpdatedNoteCursor();
                         if (!cursor.moveToFirst()) {
-                            cursor = newNoteCursor();
+                            newNoteCursor(pasteData);
+                            return;
                         }
                         updateNote(cursor, pasteData);
                     }
@@ -393,10 +397,10 @@ public class ClipService extends Service {
         return getContentResolver().query(NoteBase.Note.CONTENT_URI, null, null, null, NoteBase.Note.DEFAULT_SORT_ORDER + " LIMIT 1");
     };
 
-    private Cursor newNoteCursor() {
+    private Cursor newNoteCursor(String str) {
         ContentValues values = new ContentValues();
         values.put(NoteBase.Note.COLUMN_NAME_TITLE, getResources().getString(R.string.untitled));
-        values.put(NoteBase.Note.COLUMN_NAME_BODY, "");
+        values.put(NoteBase.Note.COLUMN_NAME_BODY, str);
         values.put(NoteBase.Note.COLUMN_NAME_CREATE_DATE, System.currentTimeMillis());
         values.put(NoteBase.Note.COLUMN_NAME_MODIFICATION_DATE, System.currentTimeMillis());
         Uri uri = getContentResolver().insert(NoteBase.Note.CONTENT_URI, values);
