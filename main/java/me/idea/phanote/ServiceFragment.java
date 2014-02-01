@@ -59,15 +59,15 @@ public class ServiceFragment extends Fragment {
             @Override
             public void onClick(View v) {
 
-                if (ClipService.STATUS == ClipService.STARTED) {
-                    mImageView.setImageResource(R.drawable.ic_menu_grey_play);
-                    mTextView.setText(R.string.start_clipbroad_listener);
-                    mActivity.stopService(new Intent(mActivity, ClipService.class));
-                } else if (ClipService.STATUS == ClipService.STOPED) {
-                    mImageView.setImageResource(R.drawable.ic_menu_grey_pause);
-                    mTextView.setText(R.string.stop_clipbroad_listener);
-                    mActivity.startService(new Intent(mActivity, ClipService.class));
-                }
+            if (ClipService.getCurrentStatus() == ClipService.STARTED) {
+                mImageView.setImageResource(R.drawable.ic_menu_grey_play);
+                mTextView.setText(R.string.start_clipbroad_listener);
+                mActivity.stopService(new Intent(mActivity, ClipService.class));
+            } else if (ClipService.getCurrentStatus() == ClipService.STOPED) {
+                mImageView.setImageResource(R.drawable.ic_menu_grey_pause);
+                mTextView.setText(R.string.stop_clipbroad_listener);
+                mActivity.startService(new Intent(mActivity, ClipService.class));
+            }
 
             }
         });

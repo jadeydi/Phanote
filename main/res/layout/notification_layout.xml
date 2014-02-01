@@ -56,7 +56,7 @@
             android:background="@drawable/notification_selector"
             android:clickable="true"
             android:padding="8dp"
-            android:src="@drawable/ic_menu_stop" />
+            android:src="@drawable/ic_menu_pause" />
 
         <ImageView
             android:id="@+id/notification_cancel"

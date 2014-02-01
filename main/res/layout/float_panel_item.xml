@@ -4,4 +4,5 @@
     android:id="@+id/float_panel_item"
     style="@style/ContentItem"
     android:gravity="center_vertical"
-    android:singleLine="true" />
+    android:singleLine="true"
+    android:focusable="true" />

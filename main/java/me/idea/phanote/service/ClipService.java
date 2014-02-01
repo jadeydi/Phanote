@@ -108,7 +108,7 @@ public class ClipService extends Service {
 
             if (item.getText() == null)
                 return;
-            String str = item.getText().toString();
+            String str = item.getText().toString().trim();
 
             if (!pasteData.equals(str)) {
                 pasteData = str;
@@ -289,7 +289,7 @@ public class ClipService extends Service {
 
     private void notificationChangeToStopStatus() {
         Intent mIntent = new Intent(STOP_CLIPBROAD_LISTENDER);
-        mRemoteViews.setImageViewResource(R.id.notification_status_toggle, R.drawable.ic_menu_stop);
+        mRemoteViews.setImageViewResource(R.id.notification_status_toggle, R.drawable.ic_menu_pause);
         mRemoteViews.setTextViewText(R.id.notification_content, getString(R.string.stop_clipbroad_listener));
         mRemoteViews.setOnClickPendingIntent(R.id.notification_status_toggle,
             PendingIntent.getBroadcast(this, 0, mIntent, PendingIntent.FLAG_UPDATE_CURRENT));

@@ -19,13 +19,13 @@
 
     <item
         android:id="@+id/menu_active"
-        android:icon="@drawable/ic_menu_important"
+        android:icon="@drawable/ic_menu_not_important"
         android:showAsAction="ifRoom"
         android:title="@string/menu_active"/>
 
     <item
         android:id="@+id/menu_disactive"
-        android:icon="@drawable/ic_menu_not_important"
+        android:icon="@drawable/ic_menu_important"
         android:showAsAction="ifRoom"
         android:title="@string/menu_disactive"/>
 </menu>
