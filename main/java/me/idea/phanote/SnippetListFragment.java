@@ -6,16 +6,13 @@ import android.app.LoaderManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Loader;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -33,7 +30,6 @@ import java.sql.Date;
 import java.text.SimpleDateFormat;
 
 import me.idea.phanote.provider.NoteBase;
-import me.idea.phanote.setting.SettingsActivity;
 
 public class SnippetListFragment extends ListFragment implements
         LoaderManager.LoaderCallbacks<Cursor> {
@@ -42,20 +38,17 @@ public class SnippetListFragment extends ListFragment implements
             NoteBase.Snippet._ID, NoteBase.Snippet.COLUMN_NAME_TITLE,
             NoteBase.Snippet.COLUMN_NAME_CREATE_DATE};
     private static final Uri CONTENT_URI = NoteBase.Snippet.CONTENT_URI;
-    private static int mType;
-    public static final int NOTE = 1;
-	public static final int SNIPPET = 2;
 
     CompoundButton.OnCheckedChangeListener mOnCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
 
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-            if (isChecked) {
-                mList.setItemChecked((Integer) buttonView.getTag(), true);
-            } else {
-                mList.setItemChecked((Integer) buttonView.getTag(), false);
-            }
+        if (isChecked) {
+            mList.setItemChecked((Integer) buttonView.getTag(), true);
+        } else {
+            mList.setItemChecked((Integer) buttonView.getTag(), false);
+        }
 
         }
     };
@@ -98,11 +91,7 @@ public class SnippetListFragment extends ListFragment implements
                     String result = changedText(false);
                     deleteSelectorSnippets();
                     copyToClipboard(result);
-                    return true;
-
-                case R.id.snippet_selector_append_to_note:
-
-                    appendSnippetsTONote();
+                    destroyActionMode();
                     return true;
 
                 default:
@@ -124,48 +113,19 @@ public class SnippetListFragment extends ListFragment implements
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
 
-        getActivity().setTitle("Snippets");
         mContext = getActivity();
-
-        mList = getListView();
-        mList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-        mList.setMultiChoiceModeListener(mMultiChoiceModeListener);
-
-        String[] dataColumns = {NoteBase.Snippet.COLUMN_NAME_TITLE,
-                NoteBase.Snippet.COLUMN_NAME_CREATE_DATE};
-        int[] viewIds = {R.id.snippet_item, R.id.snippet_item_create};
-        mAdapter = new SnippetCursorAdpter(mContext, R.layout.snippet_item,
-                null, dataColumns, viewIds);
-
-        setListAdapter(mAdapter);
+        getActivity().setTitle(R.string.page_title_snippet);
         getLoaderManager().initLoader(0, null, this);
 
-        AlertDialog.Builder mBuilder = new AlertDialog.Builder(mContext);
-        mDialog = mBuilder.setMessage(R.string.dialog_snippet_selector_message)
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialogInterface, int id) {
-                        mDialog.dismiss();
-                    }
-                }).setPositiveButton(R.string.fire, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialogInterface, int id) {
-                        deleteSelectorSnippets();
-                    }
-                }).create();
-        ;
+        initListViewData();
+        setMessageAlert();
+        super.onActivityCreated(savedInstanceState);
     }
 
     @Override
     public void onStart() {
         super.onStart();
-
-		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
-		if (sharedPref.getBoolean(SettingsActivity.KEY_PREF_SERVICE_TYPE, false)) {
-		    mType = NOTE;
-		} else {
-            mType = SNIPPET;
-        }
     }
 
     @Override
@@ -176,6 +136,37 @@ public class SnippetListFragment extends ListFragment implements
     @Override
     public void onPause() {
         super.onPause();
+    }
+
+    private void setMessageAlert() {
+        AlertDialog.Builder mBuilder = new AlertDialog.Builder(mContext);
+        mBuilder.setMessage(R.string.dialog_snippet_selector_message)
+            .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogInterface, int id) {
+                mDialog.dismiss();
+                }
+                }).setPositiveButton(R.string.fire, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogInterface, int id) {
+                deleteSelectorSnippets();
+                destroyActionMode();
+                }
+                });
+        mDialog = mBuilder.create();
+    }
+
+    private void initListViewData() {
+
+        mList = getListView();
+
+        mList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        mList.setMultiChoiceModeListener(mMultiChoiceModeListener);
+
+        String[] dataColumns = {NoteBase.Snippet.COLUMN_NAME_TITLE,
+                NoteBase.Snippet.COLUMN_NAME_CREATE_DATE};
+        int[] viewIds = {R.id.snippet_item, R.id.snippet_item_create};
+        mAdapter = new SnippetCursorAdpter(mContext, R.layout.snippet_item,
+                null, dataColumns, viewIds);
+        setListAdapter(mAdapter);
     }
 
     private int deleteSnippet(long id) {
@@ -206,13 +197,13 @@ public class SnippetListFragment extends ListFragment implements
     }
 
     private void deleteSelectorSnippets() {
-        for (long l : mList.getCheckItemIds()) {
+        for (long l : mList.getCheckedItemIds()) {
             deleteSnippet(l);
         }
     }
 
     private void destroyActionMode() {
-        if (mList.getCheckItemIds().length > 0) {
+        if (mList.getCheckedItemIds().length > 0) {
             for (int i = 0; i < mList.getChildCount(); i++) {
                 View child = mList.getChildAt(i);
                 CheckBox checkbox = (CheckBox) child.findViewById(R.id.checkbox_snippet_item);
@@ -224,13 +215,13 @@ public class SnippetListFragment extends ListFragment implements
     private String changedText(boolean appentToNote) {
         StringBuilder result = new StringBuilder();
 
-        String[] ids = new String[mList.getCheckItemIds().length];
+        String[] ids = new String[mList.getCheckedItemIds().length];
         StringBuilder sb = new StringBuilder("_id IN (");
         CharSequence delimiter = ",";
         boolean firstTime = true;
         int j = 0;
 
-        for (long l : mList.getCheckItemIds()) {
+        for (long l : mList.getCheckedItemIds()) {
             if (firstTime) {
                 firstTime = false;
             } else {
@@ -260,29 +251,6 @@ public class SnippetListFragment extends ListFragment implements
         }
 
         return result.toString();
-    }
-
-    private void appendSnippetsTONote() {
-
-        Cursor noteCursor = mContext.getContentResolver().query(NoteBase.Note.CONTENT_URI
-                , null, null, null, "updated_at DESC LIMIT 1");
-
-        if (noteCursor != null) {
-            noteCursor.moveToFirst();
-            long id = noteCursor.getLong(noteCursor.getColumnIndex(NoteBase.Note._ID));
-            String body = noteCursor.getString(noteCursor.getColumnIndex(NoteBase.Note.COLUMN_NAME_BODY));
-
-            Uri uri = ContentUris.withAppendedId(NoteBase.Note.CONTENT_URI, id);
-
-            ContentValues values = new ContentValues();
-
-            values.put(NoteBase.Note.COLUMN_NAME_BODY, body + changedText(true));
-            values.put(NoteBase.Note.COLUMN_NAME_MODIFICATION_DATE,
-                    System.currentTimeMillis());
-
-            mContext.getContentResolver().update(uri, values, null, null);
-        }
-
     }
 
     private void copyToClipboard(String text) {

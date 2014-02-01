@@ -7,11 +7,6 @@
         android:title="@string/menu_delete_snippet"/>
 
     <item
-        android:id="@+id/snippet_selector_append_to_note"
-        android:icon="@drawable/ic_menu_apend_to_note"
-        android:title="@string/menu_append_to_note" />
-
-    <item
         android:id="@+id/snippet_selector_copy"
         android:icon="@drawable/ic_menu_copy"
         android:title="@string/menu_copy_snippet" />
