@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -58,6 +60,9 @@ public class ServiceFragment extends Fragment {
         mImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+            Animation rotate = AnimationUtils.loadAnimation(mActivity, R.anim.circle_rotate);
+            mImageView.startAnimation(rotate);
 
             if (ClipService.getCurrentStatus() == ClipService.STARTED) {
                 mImageView.setImageResource(R.drawable.ic_menu_grey_play);
