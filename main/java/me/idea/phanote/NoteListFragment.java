@@ -1,5 +1,6 @@
 package me.idea.phanote;
 
+import android.app.Activity;
 import android.app.ListFragment;
 import android.app.LoaderManager;
 import android.content.ContentUris;
@@ -30,7 +31,13 @@ public class NoteListFragment extends ListFragment implements
 	private NoteCursorAdapter mAdapter;
 	private Context mContext;
 
-	private long mPos = -1;
+	@Override
+	public void onAttach(Activity activity) {
+	    mContext = activity;
+	    activity.setTitle(R.string.page_title_note);
+
+	    super.onAttach(activity);
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -41,9 +48,6 @@ public class NoteListFragment extends ListFragment implements
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
-		getActivity().setTitle("Notes");
-		mContext = getActivity();
 
 		getListView().setOnCreateContextMenuListener(this);
 
@@ -88,14 +92,6 @@ public class NoteListFragment extends ListFragment implements
 		editNote(id);
 	}
 
-	private void editNote(long id) {
-		Uri uri = ContentUris.withAppendedId(CONTENT_URI, id);
-		Intent intent = new Intent(mContext, NoteEditor.class);
-		intent.setData(uri);
-		intent.setAction(Intent.ACTION_EDIT);
-		startActivity(intent);
-	}
-
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
 		return new CursorLoader(mContext, CONTENT_URI, PROJECTION, null, null,
@@ -110,6 +106,14 @@ public class NoteListFragment extends ListFragment implements
 	@Override
 	public void onLoaderReset(Loader<Cursor> loader) {
 		mAdapter.changeCursor(null);
+	}
+
+	private void editNote(long id) {
+		Uri uri = ContentUris.withAppendedId(CONTENT_URI, id);
+		Intent intent = new Intent(mContext, NoteEditor.class);
+		intent.setData(uri);
+		intent.setAction(Intent.ACTION_EDIT);
+		startActivity(intent);
 	}
 
 }

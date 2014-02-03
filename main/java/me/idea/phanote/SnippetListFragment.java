@@ -1,5 +1,6 @@
 package me.idea.phanote;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListFragment;
 import android.app.LoaderManager;
@@ -107,6 +108,13 @@ public class SnippetListFragment extends ListFragment implements
     };
 
     @Override
+    public void onAttach(Activity activity) {
+        activity.setTitle(R.string.page_title_snippet);
+        mContext = activity;
+        super.onAttach(activity);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
@@ -114,8 +122,6 @@ public class SnippetListFragment extends ListFragment implements
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
 
-        mContext = getActivity();
-        getActivity().setTitle(R.string.page_title_snippet);
         getLoaderManager().initLoader(0, null, this);
 
         initListViewData();
