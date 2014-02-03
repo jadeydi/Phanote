@@ -31,7 +31,6 @@ public class NoteEditor extends FragmentActivity implements
     private Uri mUri;
     private Menu mMenu;
     private DialogFragment mDialog;
-    private ShareActionProvider mShareActionProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,10 +45,8 @@ public class NoteEditor extends FragmentActivity implements
         mTitle = (TextView) findViewById(R.id.note_title);
 
         if (intent.getAction().equals(Intent.ACTION_INSERT)) {
-            mStatus = NEW_NOTE;
             newNote();
         } else {
-            mStatus = EDIT_NOTE;
             editNote();
         }
 
@@ -65,15 +62,30 @@ public class NoteEditor extends FragmentActivity implements
 
         mMenu = menu;
 
-        if (isActivite()) {
-            menu.findItem(R.id.menu_active).setVisible(false);
-        } else {
-            menu.findItem(R.id.menu_disactive).setVisible(false);
+        if (getNoteStatus() == NEW_NOTE) {
+            MenuItem item = menu.findItem(R.id.menu_active);
+            if (item != null) {
+                item.setVisible(false);
+            }
         }
 
-        mShareActionProvider = (ShareActionProvider) menu.findItem(
-                R.id.menu_share).getActionProvider();
-        mShareActionProvider.setShareIntent(createShareIntent());
+        if (isActivite()) {
+            MenuItem item = menu.findItem(R.id.menu_active);
+            if (item != null)
+                item.setVisible(false);
+        } else {
+            MenuItem item = menu.findItem(R.id.menu_disactive);
+            if (item != null)
+                item.setVisible(false);
+        }
+
+        MenuItem item = menu.findItem(R.id.menu_share);
+        if (item != null) {
+            ShareActionProvider mShareActionProvider = (ShareActionProvider) item.getActionProvider();
+            if (mShareActionProvider != null) {
+                mShareActionProvider.setShareIntent(createShareIntent());
+            }
+        }
 
         return true;
     }
@@ -178,10 +190,13 @@ public class NoteEditor extends FragmentActivity implements
     }
 
     private void newNote() {
+        setNoteStatus(NEW_NOTE);
         setTitle(getString(R.string.untitled));
     }
 
     private void editNote() {
+        setNoteStatus(EDIT_NOTE);
+
         Cursor cursor = getContentResolver().query(mUri, PROJECTION, null,
                 null, NoteBase.Note.DEFAULT_SORT_ORDER);
         cursor.moveToFirst();
@@ -198,6 +213,14 @@ public class NoteEditor extends FragmentActivity implements
         mBody.setTextKeepState(note);
 
         mNoteStatus = cursor.getInt(cursor.getColumnIndex(NoteBase.Note.COLUMN_NAME_STATUS));
+    }
+
+    private void setNoteStatus(int status) {
+        mStatus = status;
+    }
+
+    private int getNoteStatus() {
+        return mStatus;
     }
 
     private boolean isActivite() {
