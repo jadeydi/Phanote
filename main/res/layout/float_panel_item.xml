@@ -4,5 +4,7 @@
     android:id="@+id/float_panel_item"
     style="@style/ContentItem"
     android:gravity="center_vertical"
+    android:paddingTop="3dp"
+    android:paddingBottom="3dp"
     android:singleLine="true"
     android:focusable="true" />

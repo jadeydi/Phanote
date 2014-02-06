@@ -7,13 +7,14 @@
     android:background="#FFFFFF">
 
     <LinearLayout
-        android:background="#000000"
+        android:background="@color/notification_bg"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:padding="3sp"
         android:paddingLeft="8sp"
         android:paddingRight="8sp">
         <TextView
+            android:textSize="14sp"
             android:text="Phanote"
             android:textColor="#FFFFFF"
             android:layout_weight="1"
@@ -23,13 +24,15 @@
             android:id="@+id/float_close"
             android:src="@drawable/ic_menu_quit"
             android:clickable="true"
-            android:layout_width="20dp"
-            android:layout_height="20dp" />
+            android:layout_width="22dp"
+            android:layout_height="22dp" />
     </LinearLayout>
 
     <ListView
         android:id="@+id/float_list"
         android:layout_width="240dp"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:divider="@color/grey"
+        android:dividerHeight="1dp"/>
 
 </LinearLayout>

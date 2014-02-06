@@ -83,6 +83,7 @@
     <color name="blue">#33B5E5</color>
     <color name="black">#000000</color>
     <color name="notification_bg">#222222</color>
+    <color name="grey">#AAAAAA</color>
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
