@@ -34,6 +34,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RemoteViews;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 
 import me.idea.phanote.ClipNote;
 import me.idea.phanote.R;
@@ -339,7 +340,6 @@ public class ClipService extends Service {
 
             @Override
 	        public void onItemClick(AdapterView l, View v, int position, long id) {
-
 	            updateNote(getNoteCursor(id), mClipStr);
                 mWindowManager.removeView(mFloatView);
 	        }
@@ -347,8 +347,7 @@ public class ClipService extends Service {
 
         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-            , PixelFormat.TRANSPARENT);
+            WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON, PixelFormat.TRANSPARENT);
         layoutParams.gravity = Gravity.CENTER;
         mWindowManager.addView(mFloatView, layoutParams);
     }
